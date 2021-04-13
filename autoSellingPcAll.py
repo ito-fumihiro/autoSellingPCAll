@@ -80,8 +80,7 @@ try:
 	yafuokuSheet = wb.get_sheet_by_name('ヤフオク')
 	jmtySheet = wb.get_sheet_by_name('ジモティー')
 	goodsSheet = wb.get_sheet_by_name('コピー')
-
-	yafuokuCategorySheet = wb.get_sheet_by_name('カテゴリ対応表_ヤフオク')
+	categorySheet = wb.get_sheet_by_name('カテゴリ対応表')
 
 
 	rc = 2
@@ -189,8 +188,45 @@ try:
 
 		# 2020/12/07
 		# 開始価格、即決価格入力
-		auctionStartPrice = int(goodsSheet.cell(row=rc, column=24).value)
-		auctionDecidePrice = int(goodsSheet.cell(row=rc, column=25).value)
+		auctionStartPrice = goodsSheet.cell(row=rc, column=24).value
+		auctionDecidePrice = goodsSheet.cell(row=rc, column=25).value
+
+		#2021/04/13 カテゴリ対応表を導入
+		input_category1 = goodsSheet.cell(row=rc, column=20).value
+		input_category2 = goodsSheet.cell(row=rc, column=21).value
+		category_meru_1 = ""
+
+		cgc = 2
+		isMatchCategory = False
+		#カテゴリシートの行番号でループ				
+		while cgc <= categorySheet.max_row:
+			categoryString = categorySheet.cell(row=cgc, column=2).value
+			categoryString2 = categorySheet.cell(row=cgc, column=3).value
+
+			#A列のカテゴリとB列のカテゴリが一致する場合はcategory2とcategory3が確定
+			if categoryString == input_category1:
+				if categoryString2 == input_category2:
+					isMatchCategory = True
+					break
+			cgc = cgc + 1
+		
+		category_meru_1 = categorySheet.cell(row=cgc, column=4).value
+		category_meru_2 = categorySheet.cell(row=cgc, column=5).value
+		category_meru_3 = categorySheet.cell(row=cgc, column=6).value
+		category_raku_1 = categorySheet.cell(row=cgc, column=7).value
+		category_raku_2 = categorySheet.cell(row=cgc, column=8).value
+		category_raku_3 = categorySheet.cell(row=cgc, column=9).value
+		category_jmty_1 = categorySheet.cell(row=cgc, column=10).value
+		category_jmty_2 = categorySheet.cell(row=cgc, column=11).value
+		category_yafuoku_1 = categorySheet.cell(row=cgc, column=12).value
+		category_yafuoku_2 = categorySheet.cell(row=cgc, column=13).value
+		category_yafuoku_3 = categorySheet.cell(row=cgc, column=14).value
+		category_yafuoku_4 = categorySheet.cell(row=cgc, column=15).value
+		category_yafuoku_5 = categorySheet.cell(row=cgc, column=16).value
+		category_yafuoku_6 = categorySheet.cell(row=cgc, column=17).value
+		category_yafuoku_7 = categorySheet.cell(row=cgc, column=18).value
+		category_yafuoku_8 = categorySheet.cell(row=cgc, column=19).value
+
 
 		# メルカリ----------------------
 		try:
@@ -257,14 +293,6 @@ try:
 						break 
 
 			# エクセルファイルから値を取得
-			category1 = "家電・スマホ・カメラ"
-			category2 = "PC/タブレット"
-			category3 = "デスクトップ型PC"
-			if goodsSheet.cell(row=rc, column=21).value == "ノートブック、ノートパソコン":
-				category3 = "ノートPC"
-			category4 = "-"
-			category5 = "-"
-
 			size = merucariSheet.cell(row=7, column=20).value 
 			brand = merucariSheet.cell(row=7, column=21).value 
 			status = merucariSheet.cell(row=7, column=22).value 
@@ -284,11 +312,11 @@ try:
 
 			#カテゴリー
 
-			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[0]).select_by_visible_text(category1)
+			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[0]).select_by_visible_text(category_meru_1)
 			sleep(2)
-			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[1]).select_by_visible_text(category2)
+			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[1]).select_by_visible_text(category_meru_2)
 			sleep(2)
-			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[2]).select_by_visible_text(category3)
+			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[2]).select_by_visible_text(category_meru_3)
 			sleep(2)
 
 			
@@ -392,17 +420,10 @@ try:
 			PurchaseApplication = rakumaSheet.cell(row=7, column=19).value
 
 			#カテゴリ
-			category1 = "スマホ/家電/カメラ"
-			category2 = "PC/タブレット"
-			# カテゴリ３はデスクトップかノートパソコンかの分岐しかない
-			category3 = "デスクトップ型PC"
-			if goodsSheet.cell(row=rc, column=21).value == "ノートブック、ノートパソコン":
-				category3 = "ノートPC"
-
 			categorylist = []
-			categorylist.append(category1)
-			categorylist.append(category2)
-			categorylist.append(category3)
+			categorylist.append(category_raku_1)
+			categorylist.append(category_raku_2)
+			categorylist.append(category_raku_3)
 
 			#商品名
 			if goodsName2 == None:
@@ -670,62 +691,40 @@ try:
 			)
 			sleep(5)
 
-			category = 'コンピュータ'
-			xpath = "//a[text()='%s']" % category
+			xpath = "//a[text()='%s']" % category_yafuoku_1
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
 
-			category = 'パソコン'
-			xpath = "//a[text()='%s']" % category
+			xpath = "//a[text()='%s']" % category_yafuoku_2
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
 
-			category = 'Windows'
-			xpath = "//a[text()='%s']" % category
+			xpath = "//a[text()='%s']" % category_yafuoku_3
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
 
-			cc = 1
-			isMatchCategory = False
-			#カテゴリシートの行番号でループ				
-			while cc <= yafuokuCategorySheet.max_row:
-				categoryString = yafuokuCategorySheet.cell(row=cc, column=1).value
-				categoryString2 = yafuokuCategorySheet.cell(row=cc, column=2).value
-
-				#A列のカテゴリとB列のカテゴリが一致する場合はcategory2とcategory3が確定
-				if categoryString == goodsSheet.cell(row=rc, column=21).value:
-					if categoryString2 == goodsSheet.cell(row=rc, column=6).value:
-						isMatchCategory = True
-						break
-				cc = cc + 1
 	
-			xpath = "//a[text()='%s']" % goodsSheet.cell(row=rc, column=21).value
+			xpath = "//a[text()='%s']" % category_yafuoku_4
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
-	
-			if isMatchCategory == True:
-				category2 = yafuokuCategorySheet.cell(row=cc, column=3).value
-				category3 = yafuokuCategorySheet.cell(row=cc, column=4).value
 
-				xpath = "//a[text()='%s']" % category2
+			if category_yafuoku_5 != "-":
+				xpath = "//a[text()='%s']" % category_yafuoku_5
 				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
-	
-				xpath = "//a[text()='%s']" % category3
+
+			if category_yafuoku_6 != "-":
+				xpath = "//a[text()='%s']" % category_yafuoku_6
 				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
-	
-			else:
-				#その他を選択
-				list4Element = driver.find_element_by_id("ptsSlctList4")
-				#.//は子要素検索
-				xpath = ".//a[text()='%s']" % "その他"
-				list4Element.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
+
+			if category_yafuoku_7 != "-":
+				xpath = "//a[text()='%s']" % category_yafuoku_7
+				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
 
-			#カテゴリが確定した場合のみcategory3はクリック可能
-			if isMatchCategory == True:
-				xpath = "//a[text()='%s']" % category3
+			if category_yafuoku_8 != "-":
+				xpath = "//a[text()='%s']" % category_yafuoku_8
 				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
 
@@ -1046,12 +1045,6 @@ try:
 			# エクセルファイルから値を取得-----------
 			#カテゴリ
 			category1 = "売ります・あげます"
-			category2 = "パソコン"
-			# カテゴリ３はデスクトップかノートパソコンかの分岐しかない
-			category3 = "デスクトップ"
-			if goodsSheet.cell(row=rc, column=21).value == "ノートブック、ノートパソコン":
-				category3 = "ノートパソコン"
-			category4 = "-"
 			
 			#支払い方法は「現金」固定
 			#paymentMethod 
@@ -1078,42 +1071,14 @@ try:
 			# 入力処理--------------------
 
 			#カテゴリー
-			if not category1:
-				pass
-			else:
-				if category1 == "-":
-					pass
-				else:
-					Select(driver.find_element_by_xpath( "//select[@id='category_group_id']")).select_by_visible_text(category1)
-					sleep(2)
+			Select(driver.find_element_by_xpath( "//select[@id='category_group_id']")).select_by_visible_text("売ります・あげます")
+			sleep(2)
 			
-			if not category2:
-				pass
-			else:
-				if category2 == "-":
-					pass
-				else:
-					Select(driver.find_element_by_xpath( "//select[@id='article_category_id']")).select_by_visible_text(category2)
-					sleep(2)
+			Select(driver.find_element_by_xpath( "//select[@id='article_category_id']")).select_by_visible_text(category_jmty_1)
+			sleep(2)
 			
-			if not category3:
-				pass
-			else:
-				if category3 == "-":
-					pass
-				else:
-					Select(driver.find_element_by_xpath( "//select[@id='article_large_genre_id']")).select_by_visible_text(category3)
-					sleep(2)
-
-			if not category4:
-				pass
-			else:
-				if category4 == "-":
-					pass
-				else:
-					Select(driver.find_element_by_xpath( "//select[@id='article_medium_genre_id']")).select_by_visible_text(category4)
-					sleep(2)
-
+			Select(driver.find_element_by_xpath( "//select[@id='article_large_genre_id']")).select_by_visible_text(category_jmty_2)
+			sleep(2)
 
 			#タイトル
 			driver.find_element_by_xpath( "//input[@id='article_title']" ).send_keys(goodsName)
