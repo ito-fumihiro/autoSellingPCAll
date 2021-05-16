@@ -66,7 +66,7 @@ try:
 	logger.info("Auto Selling Pc All Start")
 
 	#Chromeの設定
-	userdata_dir = 'UserData'  # カレントディレクトリの直下に作る場合
+	userdata_dir = dirPath + '/UserData'  # カレントディレクトリの直下に作る場合
 	os.makedirs(userdata_dir, exist_ok=True)
 	options = webdriver.ChromeOptions()
 	options.add_argument('--user-data-dir=' + userdata_dir)
