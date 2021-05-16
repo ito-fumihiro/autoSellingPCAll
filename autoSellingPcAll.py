@@ -25,7 +25,7 @@ try:
 	# 実行パスを変更
 	dirPath = sys.argv[1]
 	os.chdir(dirPath)
- 
+
 	# HTMLファイルのパス
 	htmlFilePath = "html\\" +sys.argv[2]
 
@@ -39,7 +39,7 @@ try:
 	exhibitWaitTime = int(float(sys.argv[5]) * 3600)
 
 	LISTED_DIR = 'input_data\\出品済み'
- 
+
 	# 出品後フォルダの作成
 	if not os.path.exists(LISTED_DIR):
 		# ディレクトリが存在しない場合、ディレクトリを作成する
@@ -58,7 +58,7 @@ try:
 	logger.info("arg[3]:" + sys.argv[3])
 	logger.info("arg[4]:" + sys.argv[4])
 	logger.info("arg[5]:" + sys.argv[5])
- 	
+
 	tomorrow = datetime.date.today() + datetime.timedelta(days=1)
 
 	#リターンコード
@@ -74,22 +74,23 @@ try:
 
 	#エクセルファイルを開く
 	wb = openpyxl.load_workbook('GoodsList.xlsm', data_only=True)
-	
+
 	merucariSheet = wb.get_sheet_by_name('メルカリ')
 	rakumaSheet = wb.get_sheet_by_name('ラクマ')
 	yafuokuSheet = wb.get_sheet_by_name('ヤフオク')
 	jmtySheet = wb.get_sheet_by_name('ジモティー')
 	goodsSheet = wb.get_sheet_by_name('コピー')
-	categorySheet = wb.get_sheet_by_name('カテゴリ対応表')
+
+	yafuokuCategorySheet = wb.get_sheet_by_name('カテゴリ対応表_ヤフオク')
 
 
 	rc = 2
 	count = 0
 	w_list = ['(月)', '(火)', '(水)', '(木)', '(金)', '(土)', '(日)']
 	while rc <= goodsSheet.max_row:
-		
+
 		count = count +1
-		
+
 		# コピーシートの値を取得
 		#商品名(ヤフオク、ジモティ用)
 		goodsName = goodsSheet.cell(row=rc, column=3).value
@@ -188,45 +189,8 @@ try:
 
 		# 2020/12/07
 		# 開始価格、即決価格入力
-		auctionStartPrice = goodsSheet.cell(row=rc, column=24).value
-		auctionDecidePrice = goodsSheet.cell(row=rc, column=25).value
-
-		#2021/04/13 カテゴリ対応表を導入
-		input_category1 = goodsSheet.cell(row=rc, column=20).value
-		input_category2 = goodsSheet.cell(row=rc, column=21).value
-		category_meru_1 = ""
-
-		cgc = 2
-		isMatchCategory = False
-		#カテゴリシートの行番号でループ				
-		while cgc <= categorySheet.max_row:
-			categoryString = categorySheet.cell(row=cgc, column=2).value
-			categoryString2 = categorySheet.cell(row=cgc, column=3).value
-
-			#A列のカテゴリとB列のカテゴリが一致する場合はcategory2とcategory3が確定
-			if categoryString == input_category1:
-				if categoryString2 == input_category2:
-					isMatchCategory = True
-					break
-			cgc = cgc + 1
-		
-		category_meru_1 = categorySheet.cell(row=cgc, column=4).value
-		category_meru_2 = categorySheet.cell(row=cgc, column=5).value
-		category_meru_3 = categorySheet.cell(row=cgc, column=6).value
-		category_raku_1 = categorySheet.cell(row=cgc, column=7).value
-		category_raku_2 = categorySheet.cell(row=cgc, column=8).value
-		category_raku_3 = categorySheet.cell(row=cgc, column=9).value
-		category_jmty_1 = categorySheet.cell(row=cgc, column=10).value
-		category_jmty_2 = categorySheet.cell(row=cgc, column=11).value
-		category_yafuoku_1 = categorySheet.cell(row=cgc, column=12).value
-		category_yafuoku_2 = categorySheet.cell(row=cgc, column=13).value
-		category_yafuoku_3 = categorySheet.cell(row=cgc, column=14).value
-		category_yafuoku_4 = categorySheet.cell(row=cgc, column=15).value
-		category_yafuoku_5 = categorySheet.cell(row=cgc, column=16).value
-		category_yafuoku_6 = categorySheet.cell(row=cgc, column=17).value
-		category_yafuoku_7 = categorySheet.cell(row=cgc, column=18).value
-		category_yafuoku_8 = categorySheet.cell(row=cgc, column=19).value
-
+		auctionStartPrice = int(goodsSheet.cell(row=rc, column=24).value)
+		auctionDecidePrice = int(goodsSheet.cell(row=rc, column=25).value)
 
 		# メルカリ----------------------
 		try:
@@ -293,6 +257,14 @@ try:
 						break 
 
 			# エクセルファイルから値を取得
+			category1 = "家電・スマホ・カメラ"
+			category2 = "PC/タブレット"
+			category3 = "デスクトップ型PC"
+			if goodsSheet.cell(row=rc, column=21).value == "ノートブック、ノートパソコン":
+				category3 = "ノートPC"
+			category4 = "-"
+			category5 = "-"
+
 			size = merucariSheet.cell(row=7, column=20).value 
 			brand = merucariSheet.cell(row=7, column=21).value 
 			status = merucariSheet.cell(row=7, column=22).value 
@@ -312,16 +284,16 @@ try:
 
 			#カテゴリー
 
-			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[0]).select_by_visible_text(category_meru_1)
+			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[0]).select_by_visible_text(category1)
 			sleep(2)
-			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[1]).select_by_visible_text(category_meru_2)
+			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[1]).select_by_visible_text(category2)
 			sleep(2)
-			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[2]).select_by_visible_text(category_meru_3)
+			Select(driver.find_elements_by_xpath( "//select[@name='categoryId']" )[2]).select_by_visible_text(category3)
 			sleep(2)
 
-			
+
 			#サイズ
-		
+
 			#ブランド
 
 			#商品の状態
@@ -393,7 +365,7 @@ try:
 			WebDriverWait(driver, 500).until(
 				EC.presence_of_element_located((By.ID, "detail"))
 			)
-		
+
 			import glob
 			folderPath = "input_data/image/" + str(goodsSheet.cell(row=rc, column=22).value) + "/*" 
 			files = glob.glob(folderPath)
@@ -420,10 +392,17 @@ try:
 			PurchaseApplication = rakumaSheet.cell(row=7, column=19).value
 
 			#カテゴリ
+			category1 = "スマホ/家電/カメラ"
+			category2 = "PC/タブレット"
+			# カテゴリ３はデスクトップかノートパソコンかの分岐しかない
+			category3 = "デスクトップ型PC"
+			if goodsSheet.cell(row=rc, column=21).value == "ノートブック、ノートパソコン":
+				category3 = "ノートPC"
+
 			categorylist = []
-			categorylist.append(category_raku_1)
-			categorylist.append(category_raku_2)
-			categorylist.append(category_raku_3)
+			categorylist.append(category1)
+			categorylist.append(category2)
+			categorylist.append(category3)
 
 			#商品名
 			if goodsName2 == None:
@@ -449,7 +428,7 @@ try:
 			cc  = 0
 			nowElement = driver.find_element_by_id('select-category')
 			while cc < 3:
-				
+
 				category = categorylist[cc]
 				xpath = '//*[text()="%s"]' % category
 				cc= cc+1
@@ -471,7 +450,7 @@ try:
 							item.click()
 							sleep(2)
 							break
-					
+
 			#サイズ
 			if  size == "-" or  not size:
 				print("サイズをスキップ")
@@ -497,7 +476,7 @@ try:
 			#商品の状態
 			Select(driver.find_element_by_xpath( "//select[@id='status']" )).select_by_visible_text(status)
 			sleep(2)
-			
+
 			#配送の負担
 			Select(driver.find_element_by_xpath( "//select[@id='carriage']" )).select_by_visible_text(deliveryBurden)
 			sleep(2)
@@ -536,7 +515,7 @@ try:
 			if isExhibitString == "T":
 				driver.find_element_by_xpath( "//*[@id='submit']" ).click()
 				sleep(2)
-				
+
 		except Exception as rakuma_err:
 			logger.exception('Raise Exception rakuma: %s', rakuma_err)
 		#----------------------ラクマ
@@ -554,7 +533,7 @@ try:
 			driver.get('https://auctions.yahoo.co.jp/sell/jp/show/submit?category=0')
 			# 読み込み遅いかもしれないから3秒待つ。
 			sleep(2)
-		
+
 			if not goodsSheet.cell(row=rc, column=22).value or yafuokuSheet.cell(row=rc, column=22).value == "0":
 				pass
 			else:
@@ -570,7 +549,7 @@ try:
 						sleep(3)
 					else:
 						continue
-		
+
 			#ブランド(固定)
 			brand = yafuokuSheet.cell(row=7, column=24).value
 			#サイズ(固定)
@@ -614,12 +593,12 @@ try:
 			sellingAuction = yafuokuSheet.cell(row=7, column=44).value
 			#販売形式 定額(固定)
 			sellingFixed = yafuokuSheet.cell(row=7, column=45).value
-			
+
 			#オークション開始価格(固定) → 固定解除
 			#auctionStartPrice = sheet.cell(row=7, column=46).value
 			#オークション即決価格(固定) → 固定解除
 			#auctionDecidePrice = sheet.cell(row=7, column=47).value
-			
+
 			#固定価格(固定)
 			fixedPrice = yafuokuSheet.cell(row=7, column=48).value	
 			#値下げ交渉
@@ -631,7 +610,7 @@ try:
 			day = str(date.day) + "日"
 			weekday = w_list[date.weekday()]
 			endDay = str(month) + str(day) + " " + weekday
-		
+
 
 			#終了時間(ランダム) 19時～23時
 			rand = random.randint(19,23)
@@ -670,7 +649,7 @@ try:
 			#みんなのチャリティー
 			ourCharity = yafuokuSheet.cell(row=7, column=67).value
 
-			
+
 
 			#商品名
 			if goodsName == None:
@@ -691,40 +670,62 @@ try:
 			)
 			sleep(5)
 
-			xpath = "//a[text()='%s']" % category_yafuoku_1
+			category = 'コンピュータ'
+			xpath = "//a[text()='%s']" % category
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
 
-			xpath = "//a[text()='%s']" % category_yafuoku_2
+			category = 'パソコン'
+			xpath = "//a[text()='%s']" % category
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
 
-			xpath = "//a[text()='%s']" % category_yafuoku_3
+			category = 'Windows'
+			xpath = "//a[text()='%s']" % category
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
 
-	
-			xpath = "//a[text()='%s']" % category_yafuoku_4
+			cc = 1
+			isMatchCategory = False
+			#カテゴリシートの行番号でループ				
+			while cc <= yafuokuCategorySheet.max_row:
+				categoryString = yafuokuCategorySheet.cell(row=cc, column=1).value
+				categoryString2 = yafuokuCategorySheet.cell(row=cc, column=2).value
+
+				#A列のカテゴリとB列のカテゴリが一致する場合はcategory2とcategory3が確定
+				if categoryString == goodsSheet.cell(row=rc, column=21).value:
+					if categoryString2 == goodsSheet.cell(row=rc, column=6).value:
+						isMatchCategory = True
+						break
+				cc = cc + 1
+
+			xpath = "//a[text()='%s']" % goodsSheet.cell(row=rc, column=21).value
 			driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 			sleep(2)
 
-			if category_yafuoku_5 != "-":
-				xpath = "//a[text()='%s']" % category_yafuoku_5
+			if isMatchCategory == True:
+				category2 = yafuokuCategorySheet.cell(row=cc, column=3).value
+				category3 = yafuokuCategorySheet.cell(row=cc, column=4).value
+
+				xpath = "//a[text()='%s']" % category2
 				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
 
-			if category_yafuoku_6 != "-":
-				xpath = "//a[text()='%s']" % category_yafuoku_6
+				xpath = "//a[text()='%s']" % category3
 				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
 
-			if category_yafuoku_7 != "-":
-				xpath = "//a[text()='%s']" % category_yafuoku_7
-				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
+			else:
+				#その他を選択
+				list4Element = driver.find_element_by_id("ptsSlctList4")
+				#.//は子要素検索
+				xpath = ".//a[text()='%s']" % "その他"
+				list4Element.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
 
-			if category_yafuoku_8 != "-":
-				xpath = "//a[text()='%s']" % category_yafuoku_8
+			#カテゴリが確定した場合のみcategory3はクリック可能
+			if isMatchCategory == True:
+				xpath = "//a[text()='%s']" % category3
 				driver.find_element(By.XPATH, xpath).send_keys(Keys.ENTER)
 				sleep(2)
 
@@ -743,7 +744,7 @@ try:
 				pyperclip.copy(description_html)
 				driver.find_element(By.XPATH, '//*[@id="textMode"]/div[2]/textarea[1]').send_keys(Keys.CONTROL+ "v")
 				sleep(2)
-	
+
 			#個数
 			#Select(driver.find_element_by_xpath("//select[@name='Quantity']")).select_by_visible_text("1個")
 			#sleep(2)
@@ -776,16 +777,16 @@ try:
 			els = driver.find_elements(By.XPATH, '//label[@class="CheckExpand__label cf  is-check"]')
 			for el in els:
 				driver.execute_script("arguments[0].click();", el)
-			
+
 			sleep(2)
-			
+
 			# ヤフネコ!パック
 			if postageBurdenPerson != "落札者" or  shippingCostWay != "着払いにする":
 					#ヤフネコ！ネコポス
 					if yafunekoNekopos != "-":
 						driver.find_element_by_xpath( "//input[@id='ship_delivery_n']" ).find_element(By.XPATH,'..').click()
 						sleep(2)
-					
+
 					#ヤフネコ！宅配便コンパクト
 					if yafunekoTakuConpact != "-":
 						driver.find_element_by_xpath( "//input[@id='ship_delivery_s']" ).find_element(By.XPATH,'..').click()
@@ -806,7 +807,7 @@ try:
 					if yupaketOtegaru != "-":
 						driver.find_element_by_xpath( "//input[@id='ship_delivery_yupacket']" ).find_element(By.XPATH,'..').click()
 						sleep(2)
-					
+
 					#ゆうパック
 					if yupackOtegaru != "-":
 						driver.find_element_by_xpath( "//input[@id='ship_delivery_yupack']" ).find_element(By.XPATH,'..').click()
@@ -816,7 +817,7 @@ try:
 							sleep(2)
 							Select(driver.find_element(By.XPATH, '//select[@id="ship_delivery_yupack_weight_select"]')).select_by_visible_text(yupackWeight)
 							sleep(2)
-				
+
 			#そのほかの郵送方法１
 			if sendMethodOther1 != "-":
 				#追加ボタンを押す
@@ -830,12 +831,12 @@ try:
 					sleep(2)
 				Select(driver.find_element_by_xpath("//select[@id='auc_shipname_standard1']")).select_by_visible_text(sendMethodOther1)
 				sleep(2)
-	
+
 				feeUniform = 0
 				feeHokkaido = 0
 				feeOkinawa =0
 				feeIsland = 0
-	
+
 				if categoryString == "デスクトップ":
 					feeUniform = 2000
 					feeHokkaido = 2500
@@ -909,7 +910,7 @@ try:
 				element = driver.find_element(By.XPATH, xpath)
 				driver.execute_script("arguments[0].click();", element)
 				pass
-			
+
 			# 自動再出品設定(回数)
 			if autoPostponed == "○":
 				Select(driver.find_element_by_xpath('//select[@name="numResubmit"]')).select_by_visible_text(autoReSellingCount)
@@ -936,7 +937,7 @@ try:
 					element = driver.find_element(By.XPATH, '//input[@name="AutoExtension"]').find_element(By.XPATH, '..')
 					driver.execute_script("arguments[0].click();", element)
 					sleep(2)
-	
+
 			#返品を受け取る
 			if getReturn == "○":
 				if driver.find_elements(By.XPATH, '//input[@name="retpolicy"]')[1].is_selected() == False:
@@ -960,8 +961,8 @@ try:
 					element = driver.find_element(By.XPATH, '//input[@name="salesContract"]').find_element(By.XPATH, '..')
 					driver.execute_script("arguments[0].click();", element)
 					sleep(2)
-	
-			
+
+
 			#element = driver.find_element(By.XPATH, '//*[@id="modFormReqrd"]/ul/li[2]/input')
 			element = driver.find_element(By.XPATH, "//input[@value='確認する']")
 			driver.execute_script("arguments[0].click();", element)
@@ -1045,10 +1046,16 @@ try:
 			# エクセルファイルから値を取得-----------
 			#カテゴリ
 			category1 = "売ります・あげます"
-			
+			category2 = "パソコン"
+			# カテゴリ３はデスクトップかノートパソコンかの分岐しかない
+			category3 = "デスクトップ"
+			if goodsSheet.cell(row=rc, column=21).value == "ノートブック、ノートパソコン":
+				category3 = "ノートパソコン"
+			category4 = "-"
+
 			#支払い方法は「現金」固定
 			#paymentMethod 
-			
+
 			#問い合わせ（質問など）を受け付ける 
 			contact = jmtySheet.cell(row=7, column=16).value
 
@@ -1071,14 +1078,42 @@ try:
 			# 入力処理--------------------
 
 			#カテゴリー
-			Select(driver.find_element_by_xpath( "//select[@id='category_group_id']")).select_by_visible_text("売ります・あげます")
-			sleep(2)
-			
-			Select(driver.find_element_by_xpath( "//select[@id='article_category_id']")).select_by_visible_text(category_jmty_1)
-			sleep(2)
-			
-			Select(driver.find_element_by_xpath( "//select[@id='article_large_genre_id']")).select_by_visible_text(category_jmty_2)
-			sleep(2)
+			if not category1:
+				pass
+			else:
+				if category1 == "-":
+					pass
+				else:
+					Select(driver.find_element_by_xpath( "//select[@id='category_group_id']")).select_by_visible_text(category1)
+					sleep(2)
+
+			if not category2:
+				pass
+			else:
+				if category2 == "-":
+					pass
+				else:
+					Select(driver.find_element_by_xpath( "//select[@id='article_category_id']")).select_by_visible_text(category2)
+					sleep(2)
+
+			if not category3:
+				pass
+			else:
+				if category3 == "-":
+					pass
+				else:
+					Select(driver.find_element_by_xpath( "//select[@id='article_large_genre_id']")).select_by_visible_text(category3)
+					sleep(2)
+
+			if not category4:
+				pass
+			else:
+				if category4 == "-":
+					pass
+				else:
+					Select(driver.find_element_by_xpath( "//select[@id='article_medium_genre_id']")).select_by_visible_text(category4)
+					sleep(2)
+
 
 			#タイトル
 			driver.find_element_by_xpath( "//input[@id='article_title']" ).send_keys(goodsName)
@@ -1109,7 +1144,7 @@ try:
 			if driver.find_element(By.XPATH, "//input[@id='article_online_purchasable_inquirable']").is_selected() == False:
 				driver.find_element_by_xpath( "//input[@id='article_online_purchasable_inquirable']" ).click()
 				sleep(2)
-		
+
 			#受け渡し方法
 			#配送にチェック
 			if driver.find_element(By.XPATH, "//input[@id='article_delivery_option_attributes_by_seller']").is_selected() == False:
@@ -1137,8 +1172,8 @@ try:
 		except Exception as jmty_err:
 			logger.exception('Raise Exception jmty: %s', jmty_err)
 
-		
-		
+
+
 		#出品後フォルダ/today(yyyyMMdd)へ移動する
 		path_dir = "input_data/image/" + str(goodsSheet.cell(row=rc, column=22).value)
 		if os.path.exists(path_dir):
@@ -1155,7 +1190,7 @@ try:
 			logger.exception("waitting exhibitWaitTime")
 			wt = random.randint(1,5) + exhibitWaitTime
 			sleep(wt)
-	
+
 		rc = rc +1
 
 except Exception as err:
